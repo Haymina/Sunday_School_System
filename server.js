@@ -1,4 +1,6 @@
 const connectDB = require("./config/db"); // adjust the path if your file is elsewhere
+const Member = require("./models/member");
+const mongoose = require('mongoose');
 
 // Call it
 connectDB();
@@ -14,7 +16,6 @@ server.listen(3000, () => {
   console.log("Server running on port 3000");
 });
 
-const Member = require("./models/member");
 
 // Example of inserting one member
 const newMember = new Member({
@@ -41,3 +42,8 @@ const newMember = new Member({
 newMember.save()
     .then(() => console.log("Member saved successfully"))
     .catch(err => console.log(err));
+
+async function getAllMembers() {
+  const members = await Member.find();
+  console.log(members);
+};
