@@ -1,8 +1,5 @@
-const connectDB = require("./config/db"); // adjust the path if your file is elsewhere
-
-// Call it
+const connectDB = require("./config/db");
 connectDB();
-
 const http = require("http");
 
 const server = http.createServer((req, res) => {
