@@ -1,4 +1,6 @@
-const connectDB = require("./config/db");
+const connectDB = require("./config/db"); // adjust the path if your file is elsewhere
+
+// Call it
 connectDB();
 const http = require("http");
 
@@ -11,7 +13,6 @@ server.listen(3000, () => {
   console.log("Server running on port 3000");
 });
 
-const Member = require("./models/member");
 
 // Example of inserting one member
 const newMember = new Member({
