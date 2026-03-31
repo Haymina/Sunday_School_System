@@ -6,3 +6,12 @@ router.get("/", (req, res) => {
 });
 
 module.exports = router;
+
+router.get("/search", async (req, res) => {
+    try {
+        const { name} = req.query;
+        const members = await Member.find({ fullName: { $regex: name, $options: 'i' } });
+        res.json(members);
+    } catch (error) {
+        res.status(500).json({ message: "Error searching members", error });
+    }
