@@ -1,8 +1,9 @@
-const connectDB = require("./config/db"); // adjust the path if your file is elsewhere
-const Member = require("./models/member");
-const mongoose = requre('mongoose');
+const express = require("express");
+const connectDB = require("./config/db");
 
-// Call it
+const memberRoutes = require("./routes/memberRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+
 connectDB();
 
 const http = require("http");

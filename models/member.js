@@ -2,10 +2,10 @@ const mongoose =require('mongoose');
 
 const memberSchema = new mongoose.Schema({
     memberId: { type: String, required: true },
-    fullName: { type: String, required: true }, // include grandfather
+    fullName: { type: String, required: true }, 
     dateOfBirth: { type: Date, required: true },
     gender: { type: String, required: true },
-    phoneNumber: { type: String, required: false }, // optional
+    phoneNumber: { type: String, required: false },
     momsFullName: { type: String, required: true },
     christianityName: { type: String, required: true },
     emergencyContact: {
