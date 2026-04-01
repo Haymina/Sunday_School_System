@@ -1,6 +1,6 @@
 const connectDB = require("./config/db"); // adjust the path if your file is elsewhere
 const Member = require("./models/member");
-const mongoose = require('mongoose');
+const mongoose = requre('mongoose');
 
 // Call it
 connectDB();
