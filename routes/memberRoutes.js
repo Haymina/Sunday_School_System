@@ -8,6 +8,18 @@ router.get("/", (req, res) => {
 
 module.exports = router;
 
+router.post("/register", async (req, res) => {
+    try {
+        const newMember = new Member(req.body);
+        await newMember.save();
+
+        res.json({ message: "Member registered successfully" });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 router.get("/search", async (req, res) => {
     try {
         const { name} = req.query;
