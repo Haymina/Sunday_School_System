@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const Member = require('../models/member');
+const auth = require('../middleware/auth');
 
-router.get("/", (req, res) => {
+router.get("/", auth, (req, res) => {
     res.send("member route working");
 });
 
