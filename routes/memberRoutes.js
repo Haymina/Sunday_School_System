@@ -2,13 +2,43 @@ const express = require('express');
 const router = express.Router();
 const Member = require('../models/member');
 const auth = require('../middleware/auth');
+const admin = require('../middleware/admin');
 
-router.get("/", auth, (req, res) => {
+// Protect All Routes
+router.use(auth);
+
+
+// Test Route
+router.get("/", (req, res) => {
     res.send("member route working");
 });
 
+router.get("/", auth, async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const skip = (page - 1) * limit;
 
+        const filter = {};
+        if (req.query.jobType) {
+            filter.jobType = req.query.jobType;
+        }
+        if (req.query.status) {
+            filter.status = req.query.status;
+        }
+        if (req.query.memberLevel) {
+            filter.memberLevel = req.query.memberLevel;
+        }
 
+        const members = await Member.find(filter).skip(skip).limit(limit);
+        res.json(members);
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Register Member
 router.post("/register", async (req, res) => {
     try {
         const newMember = new Member(req.body);
@@ -21,107 +51,191 @@ router.post("/register", async (req, res) => {
     }
 });
 
-router.get("/search", async (req, res) => {
+
+// Search by Name
+router.get("/search", auth, async (req, res) => {
     try {
-        const { name} = req.query;
-        const members = await Member.find({ fullName: { $regex: name, $options: 'i' } });
+        const { name, memberLevel } = req.query;
+
+        let searchQuery = {};
+
+        if (name) {
+            searchQuery.fullName = { $regex: name, $options: "i" };
+        }
+
+        if (memberLevel) {
+            searchQuery.memberLevel = memberLevel;
+        }
+
+        const members = await Member.find(searchQuery);
+
         res.json(members);
+
     } catch (error) {
-        res.status(500).json({ message: "Error searching members", error });
+        res.status(500).json({ message: error.message });
     }
 });
 
-router.get("/status", async (req, res) => {
+
+// Search by Status
+router.get("/status", admin, async (req, res) => {
     try {
         const { status } = req.query;
         const members = await Member.find({ status: status });
+
         res.json(members);
+
     } catch (error) {
-        res.status(500).json({ message: "Error searching members", error });
-    }
-});
-router.get ("/phone", async ( req, res) => {
-    try {
-        const{phoneNumber} = req.query;
-        const members = await Member.find({ phoneNumber: phoneNumber });
-        res.json(members);
-    } catch (error) {
-        res.status(500).json({ message: "Error searching members by phone number", error });
+        res.status(500).json({
+            message: "Error searching members",
+            error
+        });
     }
 });
 
-router.put('/approve/:id', async (req, res) => {
+
+// Search by Phone
+router.get("/phone", admin, async (req, res) => {
+    try {
+        const { phoneNumber } = req.query;
+        const members = await Member.find({
+            phoneNumber: phoneNumber
+        });
+
+        res.json(members);
+
+    } catch (error) {
+        res.status(500).json({
+            message: "Error searching members by phone number",
+            error
+        });
+    }
+});
+
+
+// Approve Member
+router.put('/approve/:id', admin , async (req, res) => {
     try {
         const member = await Member.findByIdAndUpdate(
-            req.params.id, 
-            { status: 'approved' }, 
+            req.params.id,
+            { status: 'approved' },
             { new: true }
         );
+
         if (!member) {
-            return res.status(404).json({ message: "Member not found" });
+            return res.status(404).json({
+                message: "Member not found"
+            });
         }
-        res.json({ message: 'Member approved successfully', member });
+
+        res.json({
+            message: 'Member approved successfully',
+            member
+        });
 
     } catch (error) {
-        res.status(500).json({ message: 'Error approving member', error });
+        res.status(500).json({
+            message: 'Error approving member',
+            error
+        });
     }
 });
 
-router.put('/reject/:id', async (req, res) => {
+
+// Reject Member
+router.put('/reject/:id', admin, async (req, res) => {
     try {
         const member = await Member.findByIdAndUpdate(
-            req.params.id, 
-            { status: 'rejected' }, 
+            req.params.id,
+            { status: 'rejected' },
             { new: true }
         );
-        res.json({ message: 'Member rejected successfully', member });
-    } catch (error) {
-        res.status(500).json({ message: 'Error rejecting member', error });
-    }   
-});
 
-router.put('/update/:id', async (req, res) => {
-    try {
-        const member = await Member.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!member) {
-            return res.status(404).json({ message: "Member not found" });
-        }
-        res.json({ message: 'Member updated successfully', member });
-    }   
-    catch (error) {
-        res.status(500).json({ message: 'Error updating member', error });
+        res.json({
+            message: 'Member rejected successfully',
+            member
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error rejecting member',
+            error
+        });
     }
 });
 
-router.delete('/delete/:id', async (req, res) => {
+
+// Update Member
+router.put('/update/:id', admin, async (req, res) => {
     try {
-        const member = await Member.findByIdAndDelete(req.params.id);
+        const member = await Member.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        );
+
         if (!member) {
-            return res.status(404).json({ message: "Member not found" });
+            return res.status(404).json({
+                message: "Member not found"
+            });
         }
-        res.json({ message: 'Member deleted successfully' });
+
+        res.json({
+            message: 'Member updated successfully',
+            member
+        });
+
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting member', error });
+        res.status(500).json({
+            message: 'Error updating member',
+            error
+        });
     }
 });
 
-router.get('/view/:id', async (req, res) => {
+
+// Delete Member
+router.delete('/delete/:id', admin, async (req, res) => {
     try {
-        const member = await Member.findById(req.params.id);    
+        const member = await Member.findByIdAndDelete(
+            req.params.id
+        );
+
         if (!member) {
-            return res.status(404).json({ message: "Member not found" });
+            return res.status(404).json({
+                message: "Member not found"
+            });
         }
+
+        res.json({
+            message: 'Member deleted successfully'
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error deleting member',
+            error
+        });
+    }
+});
+
+
+// View Member
+router.get('/view/:id', auth, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin' && req.user.id !== req.params.id) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+
+        const member = await Member.findById(req.params.id);
+        if (!member) return res.status(404).json({ message: "Member not found" });
+
         res.json(member);
+
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching member', error });
+        res.status(500).json({ message: "Error fetching member", error });
     }
-}); 
+});
+
 
 module.exports = router;
-
-/* Next Step (Day 20)
-We will:
-
-Create Admin account
-Test login
-Use Postman / Thunder Client */
