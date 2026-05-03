@@ -52,10 +52,10 @@ router.post("/register", async (req, res) => {
 });
 
 
-// Search by Name
+// Search by Name, memberLevel, phoneNumber, and status
 router.get("/search", auth, async (req, res) => {
     try {
-        const { name, memberLevel } = req.query;
+        const { name, memberLevel, phoneNumber, status } = req.query;
 
         let searchQuery = {};
 
@@ -67,48 +67,19 @@ router.get("/search", auth, async (req, res) => {
             searchQuery.memberLevel = memberLevel;
         }
 
+        if (phoneNumber) {
+            searchQuery.phoneNumber = phoneNumber;
+        }
+        if (status) {
+            searchQuery.status = status;
+        }       
+
         const members = await Member.find(searchQuery);
 
         res.json(members);
 
     } catch (error) {
         res.status(500).json({ message: error.message });
-    }
-});
-
-
-// Search by Status
-router.get("/status", admin, async (req, res) => {
-    try {
-        const { status } = req.query;
-        const members = await Member.find({ status: status });
-
-        res.json(members);
-
-    } catch (error) {
-        res.status(500).json({
-            message: "Error searching members",
-            error
-        });
-    }
-});
-
-
-// Search by Phone
-router.get("/phone", admin, async (req, res) => {
-    try {
-        const { phoneNumber } = req.query;
-        const members = await Member.find({
-            phoneNumber: phoneNumber
-        });
-
-        res.json(members);
-
-    } catch (error) {
-        res.status(500).json({
-            message: "Error searching members by phone number",
-            error
-        });
     }
 });
 
